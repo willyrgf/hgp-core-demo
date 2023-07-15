@@ -4,6 +4,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,16 +13,18 @@ import (
 
 	"github.com/hashicorp/go-plugin"
 	"github.com/hashicorp/go-plugin/examples/grpc/shared"
+	compproto "github.com/willyrgf/hgp-core-demo/proto/comp"
+	"github.com/willyrgf/hgp-core-demo/shared/comp"
 )
 
 func run() error {
 	// We're a host. Start by launching the plugin process.
+	pluginName := os.Getenv("PLUGIN")
 	client := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: shared.Handshake,
 		Plugins:         shared.PluginMap,
-		Cmd:             exec.Command("sh", "-c", os.Getenv("KV_PLUGIN")),
-		AllowedProtocols: []plugin.Protocol{
-			plugin.ProtocolNetRPC, plugin.ProtocolGRPC},
+		Cmd:             exec.Command("sh", "-c", pluginName),
+		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
 	})
 	defer client.Kill()
 
@@ -32,34 +35,20 @@ func run() error {
 	}
 
 	// Request the plugin
-	raw, err := rpcClient.Dispense("kv_grpc")
+	raw, err := rpcClient.Dispense(pluginName)
 	if err != nil {
 		return err
 	}
 
 	// We should have a KV store now! This feels like a normal interface
 	// implementation but is in fact over an RPC connection.
-	kv := raw.(shared.KV)
-	os.Args = os.Args[1:]
-	switch os.Args[0] {
-	case "get":
-		result, err := kv.Get(os.Args[1])
-		if err != nil {
-			return err
-		}
-
-		fmt.Println(string(result))
-
-	case "put":
-		err := kv.Put(os.Args[1], []byte(os.Args[2]))
-		if err != nil {
-			return err
-		}
-
-	default:
-		return fmt.Errorf("Please only use 'get' or 'put', given: %q", os.Args[0])
+	test := raw.(comp.Test)
+	report, err := test.Run(context.TODO(), &compproto.Empty{})
+	if err != nil {
+		return err
 	}
 
+	fmt.Printf("Report:\n%+v\n", report)
 	return nil
 }
 
