@@ -1,71 +1,30 @@
-# KV Example
+# Hashicorp Go Plugin Core Demo
 
-This example builds a simple key/value store CLI where the mechanism
-for storing and retrieving keys is pluggable. To build this example:
 
+## Compile plugin
 ```sh
-# This builds the main CLI
-$ go build -o kv
-
-# This builds the plugin written in Go
-$ go build -o kv-go-grpc ./plugin-go-grpc
-
-# This tells the KV binary to use the "kv-go-grpc" binary
-$ export KV_PLUGIN="./kv-go-grpc"
-
-# Read and write
-$ ./kv put hello world
-
-$ ./kv get hello
-world
+ go build  -o comp ./plugins/comp/main.go
 ```
 
-### Plugin: plugin-go-grpc
-
-This plugin uses gRPC to serve a plugin that is written in Go:
-
-```
-# This builds the plugin written in Go
-$ go build -o kv-go-grpc ./plugin-go-grpc
-
-# This tells the KV binary to use the "kv-go-grpc" binary
-$ export KV_PLUGIN="./kv-go-grpc"
-```
-
-### Plugin: plugin-go-netrpc
-
-This plugin uses the builtin Go net/rpc mechanism to serve the plugin:
-
-```
-# This builds the plugin written in Go
-$ go build -o kv-go-netrpc ./plugin-go-netrpc
-
-# This tells the KV binary to use the "kv-go-netrpc" binary
-$ export KV_PLUGIN="./kv-go-netrpc"
-```
-
-### Plugin: plugin-python
-
-This plugin is written in Python:
-
-```
-$ export KV_PLUGIN="python plugin-python/plugin.py"
-```
-
-## Updating the Protocol
-
-If you update the protocol buffers file, you can regenerate the file
-using the following command from this directory. You do not need to run
-this if you're just trying the example.
-
-For Go:
-
+## Compile core
 ```sh
-$ protoc -I proto/ proto/kv.proto --go_out=plugins=grpc:proto/
+ go build  -o core ./main.go
 ```
 
-For Python:
-
+## Run test
 ```sh
-$ python -m grpc_tools.protoc -I ./proto/ --python_out=./plugin-python/ --grpc_python_out=./plugin-python/ ./proto/kv.proto
+PLUGIN="comp" ./core
+```
+```sh
+2023-07-18T10:24:07.094-0300 [DEBUG] plugin: starting plugin: path=/bin/sh args=[sh, -c, ./comp]
+2023-07-18T10:24:07.095-0300 [DEBUG] plugin: plugin started: path=/bin/sh pid=11843
+2023-07-18T10:24:07.095-0300 [DEBUG] plugin: waiting for RPC address: path=/bin/sh
+2023-07-18T10:24:07.104-0300 [DEBUG] plugin: using plugin: version=1
+2023-07-18T10:24:07.104-0300 [DEBUG] plugin.sh: plugin address: network=unix address=/var/folders/7r/sy0t398s141_ps7tvyrsk8740000gn/T/plugin2682679746 timestamp=2023-07-18T10:24:07.104-0300
+2023-07-18T10:24:07.105-0300 [TRACE] plugin.stdio: waiting for stdio data
+Report:
+message:"test OK"
+2023-07-18T10:24:07.106-0300 [DEBUG] plugin.stdio: received EOF, stopping recv loop: err="rpc error: code = Unavailable desc = error reading from server: EOF"
+2023-07-18T10:24:07.106-0300 [INFO]  plugin: plugin process exited: path=/bin/sh pid=11843
+2023-07-18T10:24:07.106-0300 [DEBUG] plugin: plugin exited
 ```

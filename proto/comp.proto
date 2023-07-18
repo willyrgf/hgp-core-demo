@@ -1,0 +1,19 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
+syntax = "proto3";
+package proto;
+
+import "google/protobuf/empty.proto";
+
+
+message Report {
+    string message = 1;
+    string error = 2;
+}
+
+service Test {
+    rpc Run(google.protobuf.Empty) returns (Report);
+}
+
+option go_package = "github.com/willyrgf/hgp-core-demo/proto/comp";
