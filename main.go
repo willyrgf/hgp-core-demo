@@ -6,24 +6,24 @@ package main
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"os/exec"
 
 	"github.com/hashicorp/go-plugin"
-	"github.com/hashicorp/go-plugin/examples/grpc/shared"
-	compproto "github.com/willyrgf/hgp-core-demo/proto/comp"
+	"github.com/willyrgf/hgp-core-demo/shared"
 	"github.com/willyrgf/hgp-core-demo/shared/comp"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func run() error {
 	// We're a host. Start by launching the plugin process.
 	pluginName := os.Getenv("PLUGIN")
 	client := plugin.NewClient(&plugin.ClientConfig{
-		HandshakeConfig: shared.Handshake,
-		Plugins:         shared.PluginMap,
-		Cmd:             exec.Command("sh", "-c", pluginName),
+		HandshakeConfig:  shared.Handshake,
+		Plugins:          shared.PluginMap,
+		Cmd:              exec.Command("sh", "-c", "./"+pluginName),
 		AllowedProtocols: []plugin.Protocol{plugin.ProtocolGRPC},
 	})
 	defer client.Kill()
@@ -43,7 +43,7 @@ func run() error {
 	// We should have a KV store now! This feels like a normal interface
 	// implementation but is in fact over an RPC connection.
 	test := raw.(comp.Test)
-	report, err := test.Run(context.TODO(), &compproto.Empty{})
+	report, err := test.Run(context.TODO(), &emptypb.Empty{})
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func run() error {
 
 func main() {
 	// We don't want to see the plugin logs.
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 
 	err := run()
 	if err != nil {

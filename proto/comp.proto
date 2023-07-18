@@ -4,15 +4,16 @@
 syntax = "proto3";
 package proto;
 
+import "google/protobuf/empty.proto";
+
+
 message Report {
     string message = 1;
     string error = 2;
 }
 
-message Empty {}
-
 service Test {
-    rpc Run(Empty) returns (Report);
+    rpc Run(google.protobuf.Empty) returns (Report);
 }
 
 option go_package = "github.com/willyrgf/hgp-core-demo/proto/comp";

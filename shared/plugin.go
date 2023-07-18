@@ -14,4 +14,4 @@ var Handshake = plugin.HandshakeConfig{
 	MagicCookieValue: "hello",
 }
 
-var PluginMap = map[string]plugin.Plugin{"hgp": &comp.TestPlugin{}}
+var PluginMap = map[string]plugin.Plugin{"comp": &comp.TestPlugin{}}

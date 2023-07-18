@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/go-plugin"
 	"github.com/willyrgf/hgp-core-demo/proto/comp"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type Report struct {
@@ -14,7 +15,7 @@ type Report struct {
 }
 
 type Test interface {
-	Run(ctx context.Context, e *comp.Empty) (*comp.Report, error)
+	Run(ctx context.Context, e *emptypb.Empty) (*comp.Report, error)
 }
 
 type TestPlugin struct {
